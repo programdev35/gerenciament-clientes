@@ -55,86 +55,86 @@ const CustomerDetails = ({ customer, onClose }: CustomerDetailsProps) => {
   ].filter(Boolean).join(', ');
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 flex items-center justify-center p-4 z-50">
+      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto dark:bg-slate-800 dark:border-slate-700">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-xl font-semibold">Detalhes do Cliente</CardTitle>
-          <Button variant="ghost" size="sm" onClick={onClose}>
+          <CardTitle className="text-xl font-semibold dark:text-slate-100">Detalhes do Cliente</CardTitle>
+          <Button variant="ghost" size="sm" onClick={onClose} className="dark:hover:bg-slate-700">
             <X className="h-4 w-4" />
           </Button>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Personal Information */}
           <div>
-            <h3 className="text-lg font-semibold text-slate-800 mb-3">Informações Pessoais</h3>
+            <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-3">Informações Pessoais</h3>
             <div className="space-y-3">
               <div>
-                <label className="text-sm font-medium text-slate-600">Nome Completo</label>
-                <p className="text-slate-800 text-lg">{customer.name}</p>
+                <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Nome Completo</label>
+                <p className="text-slate-800 dark:text-slate-100 text-lg">{customer.name}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-slate-600">Telefone</label>
-                <p className="text-slate-800">{formatPhone(customer.phone)}</p>
+                <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Telefone</label>
+                <p className="text-slate-800 dark:text-slate-100">{formatPhone(customer.phone)}</p>
               </div>
             </div>
           </div>
 
-          <Separator />
+          <Separator className="dark:bg-slate-700" />
 
           {/* Address Information */}
           <div>
-            <h3 className="text-lg font-semibold text-slate-800 mb-3">Endereço</h3>
+            <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-3">Endereço</h3>
             <div className="space-y-3">
               <div>
-                <label className="text-sm font-medium text-slate-600">Endereço Completo</label>
-                <p className="text-slate-800">{fullAddress}</p>
+                <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Endereço Completo</label>
+                <p className="text-slate-800 dark:text-slate-100">{fullAddress}</p>
               </div>
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-slate-600">Rua</label>
-                  <p className="text-slate-800">{customer.street}</p>
+                  <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Rua</label>
+                  <p className="text-slate-800 dark:text-slate-100">{customer.street}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-slate-600">Número</label>
-                  <p className="text-slate-800">{customer.number}</p>
+                  <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Número</label>
+                  <p className="text-slate-800 dark:text-slate-100">{customer.number}</p>
                 </div>
               </div>
 
               {customer.complement && (
                 <div>
-                  <label className="text-sm font-medium text-slate-600">Complemento</label>
-                  <p className="text-slate-800">{customer.complement}</p>
+                  <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Complemento</label>
+                  <p className="text-slate-800 dark:text-slate-100">{customer.complement}</p>
                 </div>
               )}
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-slate-600">Bairro</label>
-                  <p className="text-slate-800">{customer.neighborhood}</p>
+                  <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Bairro</label>
+                  <p className="text-slate-800 dark:text-slate-100">{customer.neighborhood}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-slate-600">CEP</label>
-                  <p className="text-slate-800">{formatZipCode(customer.zipCode)}</p>
+                  <label className="text-sm font-medium text-slate-600 dark:text-slate-400">CEP</label>
+                  <p className="text-slate-800 dark:text-slate-100">{formatZipCode(customer.zipCode)}</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-slate-600">Cidade</label>
-                  <p className="text-slate-800">{customer.city}</p>
+                  <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Cidade</label>
+                  <p className="text-slate-800 dark:text-slate-100">{customer.city}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-slate-600">Estado</label>
-                  <p className="text-slate-800">{customer.state}</p>
+                  <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Estado</label>
+                  <p className="text-slate-800 dark:text-slate-100">{customer.state}</p>
                 </div>
               </div>
 
               {customer.referencePoint && (
                 <div>
-                  <label className="text-sm font-medium text-slate-600">Ponto de Referência</label>
+                  <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Ponto de Referência</label>
                   <div className="mt-1">
-                    <Badge variant="outline" className="text-sm">
+                    <Badge variant="outline" className="text-sm dark:border-slate-600 dark:text-slate-300">
                       {customer.referencePoint}
                     </Badge>
                   </div>
@@ -143,14 +143,14 @@ const CustomerDetails = ({ customer, onClose }: CustomerDetailsProps) => {
             </div>
           </div>
 
-          <Separator />
+          <Separator className="dark:bg-slate-700" />
 
           {/* Metadata */}
           <div>
-            <h3 className="text-lg font-semibold text-slate-800 mb-3">Informações do Sistema</h3>
+            <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-3">Informações do Sistema</h3>
             <div>
-              <label className="text-sm font-medium text-slate-600">Data de Cadastro</label>
-              <p className="text-slate-800">{formatDate(customer.createdAt)}</p>
+              <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Data de Cadastro</label>
+              <p className="text-slate-800 dark:text-slate-100">{formatDate(customer.createdAt)}</p>
             </div>
           </div>
 
