@@ -101,6 +101,23 @@ const Index = () => {
     return phone.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
   };
 
+  const formatZipCode = (zipCode: string) => {
+    return zipCode.replace(/(\d{5})(\d{3})/, '$1-$2');
+  };
+
+  const getFullAddress = (customer: Customer) => {
+    const parts = [
+      customer.street,
+      customer.number,
+      customer.complement,
+      customer.neighborhood,
+      customer.city,
+      customer.state,
+      formatZipCode(customer.zipCode)
+    ].filter(Boolean);
+    return parts.join(', ');
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800 p-4 transition-colors">
       <div className="max-w-7xl mx-auto">
@@ -188,10 +205,8 @@ const Index = () => {
                   >
                     <div className="flex-1">
                       <h3 className="font-semibold text-slate-800 dark:text-slate-100 mb-1">{customer.name}</h3>
-                      <div className="flex flex-wrap gap-2 text-sm text-slate-600 dark:text-slate-400">
+                      <div className="flex flex-wrap gap-2 text-sm text-slate-600 dark:text-slate-400 mb-1">
                         <span>{formatPhone(customer.phone)}</span>
-                        <span>•</span>
-                        <span>{customer.city}, {customer.state}</span>
                         {customer.referencePoint && (
                           <>
                             <span>•</span>
@@ -200,6 +215,9 @@ const Index = () => {
                             </Badge>
                           </>
                         )}
+                      </div>
+                      <div className="text-sm text-slate-500 dark:text-slate-400">
+                        <span>{getFullAddress(customer)}</span>
                       </div>
                     </div>
                     <div className="flex gap-2">

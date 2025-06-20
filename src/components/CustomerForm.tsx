@@ -35,8 +35,8 @@ const CustomerForm = ({ customer, onSubmit, onClose }: CustomerFormProps) => {
     number: '',
     complement: '',
     neighborhood: '',
-    city: '',
-    state: '',
+    city: 'Itabuna',
+    state: 'BA',
     zipCode: '',
     referencePoint: '',
   });
