@@ -7,18 +7,16 @@ import { usePWA } from '@/hooks/usePWA';
 
 const InstallPrompt = () => {
   const { 
-    isInstallable, 
     installApp, 
     showInstallPrompt, 
     hideInstallPrompt, 
     isIOS, 
-    isMobile,
     deferredPrompt 
   } = usePWA();
   
   const [showIOSInstructions, setShowIOSInstructions] = useState(false);
 
-  // Só mostrar se tiver o prompt nativo ou for iOS
+  // Só mostrar se tiver o prompt ativo e for um prompt nativo do browser
   if (!showInstallPrompt || (!deferredPrompt && !isIOS)) return null;
 
   const handleInstall = async () => {

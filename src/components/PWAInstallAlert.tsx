@@ -15,57 +15,36 @@ const PWAInstallAlert = () => {
     isIOS, 
     isMobile, 
     canInstall,
-    deferredPrompt 
+    deferredPrompt,
+    showInstallPrompt,
+    hideInstallPrompt
   } = usePWA();
   
-  const [isVisible, setIsVisible] = useState(false);
-  const [isDismissed, setIsDismissed] = useState(false);
   const [showIOSInstructions, setShowIOSInstructions] = useState(false);
 
-  useEffect(() => {
-    // Verificar se o usuário já dispensou o alerta
-    const dismissed = localStorage.getItem('pwa-install-dismissed');
-    if (dismissed) {
-      setIsDismissed(true);
-      return;
-    }
-
-    // Mostrar alerta após 5 segundos se não estiver instalado e puder instalar
-    const timer = setTimeout(() => {
-      if (!isInstalled && isOnline && canInstall) {
-        setIsVisible(true);
-        console.log('Showing PWA install alert', { 
-          isInstalled, 
-          isOnline, 
-          canInstall, 
-          isIOS, 
-          isMobile,
-          deferredPrompt: !!deferredPrompt 
-        });
-      }
-    }, 5000);
-
-    return () => clearTimeout(timer);
-  }, [isInstalled, isOnline, canInstall, isIOS, isMobile, deferredPrompt]);
-
-  const handleDismiss = () => {
-    setIsVisible(false);
-    setIsDismissed(true);
-    localStorage.setItem('pwa-install-dismissed', 'true');
-  };
-
   const handleInstall = async () => {
+    console.log('handleInstall chamado', { isIOS, deferredPrompt: !!deferredPrompt });
+    
     if (isIOS) {
       setShowIOSInstructions(true);
     } else {
       await installApp();
-      setIsVisible(false);
     }
   };
 
-  if (!isVisible || isDismissed || isInstalled || !canInstall) {
+  // Não mostrar se estiver instalado, offline, não puder instalar, ou o prompt não estiver ativo
+  if (isInstalled || !isOnline || !canInstall || !showInstallPrompt) {
     return null;
   }
+
+  console.log('PWAInstallAlert renderizando', {
+    isInstalled,
+    isOnline,
+    canInstall,
+    showInstallPrompt,
+    isIOS,
+    deferredPrompt: !!deferredPrompt
+  });
 
   const IOSInstructionsModal = () => (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[60]">
@@ -79,7 +58,7 @@ const PWAInstallAlert = () => {
             size="sm" 
             onClick={() => {
               setShowIOSInstructions(false);
-              handleDismiss();
+              hideInstallPrompt();
             }}
             className="h-8 w-8 p-0"
           >
@@ -95,7 +74,7 @@ const PWAInstallAlert = () => {
             <div className="flex items-center gap-2">
               <Share className="h-4 w-4 text-blue-600 dark:text-blue-400" />
               <span className="text-sm text-slate-700 dark:text-slate-300">
-                Toque no botão "Compartilhar"
+                Toque no botão "Compartilhar" (ícone de seta para cima)
               </span>
             </div>
           </div>
@@ -107,7 +86,7 @@ const PWAInstallAlert = () => {
             <div className="flex items-center gap-2">
               <Plus className="h-4 w-4 text-green-600 dark:text-green-400" />
               <span className="text-sm text-slate-700 dark:text-slate-300">
-                Selecione "Adicionar à Tela de Início"
+                Role para baixo e selecione "Adicionar à Tela de Início"
               </span>
             </div>
           </div>
@@ -117,7 +96,7 @@ const PWAInstallAlert = () => {
               3
             </div>
             <span className="text-sm text-slate-700 dark:text-slate-300">
-              Confirme tocando em "Adicionar"
+              Confirme tocando em "Adicionar" no canto superior direito
             </span>
           </div>
         </div>
@@ -177,40 +156,17 @@ const PWAInstallAlert = () => {
               </AlertDescription>
 
               <div className="flex flex-col sm:flex-row gap-3">
-                {(isInstallable && deferredPrompt) || isIOS ? (
-                  <Button
-                    onClick={handleInstall}
-                    className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-2 shadow-lg"
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    {isIOS ? 'Ver Instruções' : 'Instalar Agora'}
-                  </Button>
-                ) : (
-                  <div className="bg-white dark:bg-slate-800 rounded-lg p-3 border border-orange-200 dark:border-orange-700">
-                    <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                      {isMobile ? 'Para instalar no mobile:' : 'Para instalar no desktop:'}
-                    </p>
-                    <div className="text-xs text-slate-600 dark:text-slate-400 space-y-1">
-                      {isMobile ? (
-                        <>
-                          <div>• Use Chrome ou Safari</div>
-                          <div>• Aguarde o prompt de instalação aparecer</div>
-                          <div>• Ou use o menu do navegador</div>
-                        </>
-                      ) : (
-                        <>
-                          <div>• Use Chrome ou Edge</div>
-                          <div>• Clique no ícone de instalação na barra de endereço</div>
-                          <div>• Ou use Ctrl/Cmd + Shift + A</div>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                )}
+                <Button
+                  onClick={handleInstall}
+                  className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-2 shadow-lg"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  {isIOS ? 'Ver Instruções' : 'Instalar Agora'}
+                </Button>
                 
                 <Button
                   variant="outline"
-                  onClick={handleDismiss}
+                  onClick={hideInstallPrompt}
                   className="border-orange-300 text-orange-700 hover:bg-orange-50 dark:border-orange-600 dark:text-orange-300 dark:hover:bg-orange-900/20"
                 >
                   Talvez depois
@@ -221,7 +177,7 @@ const PWAInstallAlert = () => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={handleDismiss}
+              onClick={hideInstallPrompt}
               className="flex-shrink-0 text-orange-600 hover:text-orange-700 hover:bg-orange-100 dark:text-orange-400 dark:hover:text-orange-300 dark:hover:bg-orange-900/20 rounded-full h-8 w-8 p-0"
             >
               <X className="h-4 w-4" />
