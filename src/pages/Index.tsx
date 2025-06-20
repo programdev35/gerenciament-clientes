@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Navigate } from 'react-router-dom';
-import { Search, Plus, Edit, Trash2, Eye, LogOut, User } from 'lucide-react';
+import { Navigate, Link } from 'react-router-dom';
+import { Search, Plus, Edit, Trash2, Eye, LogOut, User, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,7 +19,7 @@ import { useCustomers, Customer, CustomerFormData } from '@/hooks/useCustomers';
 import { usePWA } from '@/hooks/usePWA';
 
 const Index = () => {
-  const { user, loading, signOut } = useAuth();
+  const { user, loading, signOut, isAdmin } = useAuth();
   const { customers, isLoading, createCustomer, updateCustomer, deleteCustomer } = useCustomers();
   const { isMobile } = usePWA();
   
@@ -152,6 +152,18 @@ const Index = () => {
                 <User className="h-4 w-4" />
                 <span className="hidden sm:inline">{user?.email}</span>
               </div>
+              {isAdmin && (
+                <Link to="/admin">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2 border-orange-200 text-orange-700 hover:bg-orange-50 dark:border-orange-700 dark:text-orange-300 dark:hover:bg-orange-900/20"
+                  >
+                    <Shield className="h-4 w-4" />
+                    <span className="hidden sm:inline">Admin</span>
+                  </Button>
+                </Link>
+              )}
               <ThemeToggle />
               <Button
                 variant="outline"

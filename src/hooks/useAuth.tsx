@@ -8,9 +8,11 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  isAdmin: boolean;
   signIn: (email: string, password: string) => Promise<{ error?: any }>;
-  signUp: (email: string, password: string, name: string) => Promise<{ error?: any }>;
   signOut: () => Promise<void>;
+  checkUserRole: () => Promise<void>;
+  createUser: (email: string, password: string, name: string) => Promise<{ error?: any }>;
 }
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
@@ -27,6 +29,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  const checkUserRole = async () => {
+    if (!user) {
+      setIsAdmin(false);
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.rpc('has_role', {
+        _user_id: user.id,
+        _role: 'admin'
+      });
+
+      if (error) {
+        console.error('Erro ao verificar role:', error);
+        setIsAdmin(false);
+      } else {
+        setIsAdmin(data || false);
+      }
+    } catch (error) {
+      console.error('Erro ao verificar role:', error);
+      setIsAdmin(false);
+    }
+  };
 
   useEffect(() => {
     // Set up auth state listener
@@ -35,6 +62,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+        
+        // Check user role after authentication
+        if (session?.user) {
+          setTimeout(() => {
+            checkUserRole();
+          }, 0);
+        } else {
+          setIsAdmin(false);
+        }
       }
     );
 
@@ -43,10 +79,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+      
+      if (session?.user) {
+        setTimeout(() => {
+          checkUserRole();
+        }, 0);
+      }
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // Update checkUserRole when user changes
+  useEffect(() => {
+    if (user) {
+      checkUserRole();
+    }
+  }, [user]);
 
   const signIn = async (email: string, password: string) => {
     try {
@@ -68,34 +117,45 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const signUp = async (email: string, password: string, name: string) => {
+  const createUser = async (email: string, password: string, name: string) => {
     try {
-      const redirectUrl = `${window.location.origin}/`;
-      
-      const { error } = await supabase.auth.signUp({
+      if (!isAdmin) {
+        toast.error('Acesso negado. Apenas administradores podem criar usuários.');
+        return { error: 'Unauthorized' };
+      }
+
+      const { data, error } = await supabase.auth.admin.createUser({
         email,
         password,
-        options: {
-          emailRedirectTo: redirectUrl,
-          data: {
-            name: name,
-          }
-        }
+        user_metadata: {
+          name: name,
+        },
+        email_confirm: true
       });
 
       if (error) {
-        if (error.message.includes('User already registered')) {
-          toast.error('Este email já está cadastrado. Tente fazer login.');
-        } else {
-          toast.error(error.message);
-        }
+        toast.error(`Erro ao criar usuário: ${error.message}`);
         return { error };
       }
 
-      toast.success('Cadastro realizado com sucesso!');
+      // Assign user role to the new user
+      if (data.user) {
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .insert({
+            user_id: data.user.id,
+            role: 'user'
+          });
+
+        if (roleError) {
+          console.error('Erro ao atribuir role:', roleError);
+        }
+      }
+
+      toast.success('Usuário criado com sucesso!');
       return {};
     } catch (error) {
-      toast.error('Erro inesperado no cadastro');
+      toast.error('Erro inesperado ao criar usuário');
       return { error };
     }
   };
@@ -103,6 +163,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const signOut = async () => {
     try {
       await supabase.auth.signOut();
+      setIsAdmin(false);
       toast.success('Logout realizado com sucesso!');
     } catch (error) {
       toast.error('Erro ao fazer logout');
@@ -114,9 +175,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       user,
       session,
       loading,
+      isAdmin,
       signIn,
-      signUp,
       signOut,
+      checkUserRole,
+      createUser,
     }}>
       {children}
     </AuthContext.Provider>
