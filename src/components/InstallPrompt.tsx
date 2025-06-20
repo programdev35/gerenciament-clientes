@@ -6,10 +6,20 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { usePWA } from '@/hooks/usePWA';
 
 const InstallPrompt = () => {
-  const { isInstallable, installApp, showInstallPrompt, hideInstallPrompt, isIOS, isMobile } = usePWA();
+  const { 
+    isInstallable, 
+    installApp, 
+    showInstallPrompt, 
+    hideInstallPrompt, 
+    isIOS, 
+    isMobile,
+    deferredPrompt 
+  } = usePWA();
+  
   const [showIOSInstructions, setShowIOSInstructions] = useState(false);
 
-  if (!showInstallPrompt || !isMobile) return null;
+  // Só mostrar se tiver o prompt nativo ou for iOS
+  if (!showInstallPrompt || (!deferredPrompt && !isIOS)) return null;
 
   const handleInstall = async () => {
     if (isIOS) {
