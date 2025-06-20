@@ -22,7 +22,7 @@ const Index = () => {
   const [showForm, setShowForm] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
-  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
+  const [editingCustomer, setEditingCustomer] = useState<CustomerFormData | null>(null);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
 
   // Redirect to auth if not authenticated
@@ -47,9 +47,10 @@ const Index = () => {
   };
 
   const handleEditCustomer = (customerData: CustomerFormData) => {
-    if (editingCustomer) {
-      updateCustomer({ id: editingCustomer.id, customerData });
+    if (editingCustomer && selectedCustomer) {
+      updateCustomer({ id: selectedCustomer.id, customerData });
       setEditingCustomer(null);
+      setSelectedCustomer(null);
       setShowForm(false);
     }
   };
@@ -68,7 +69,9 @@ const Index = () => {
   );
 
   const openEditForm = (customer: Customer) => {
-    setEditingCustomer(customer);
+    const formData = customerToFormData(customer);
+    setEditingCustomer(formData);
+    setSelectedCustomer(customer);
     setShowForm(true);
   };
 
@@ -278,11 +281,12 @@ const Index = () => {
         {/* Modals */}
         {showForm && (
           <CustomerForm
-            customer={editingCustomer ? customerToFormData(editingCustomer) : null}
+            customer={editingCustomer}
             onSubmit={editingCustomer ? handleEditCustomer : handleAddCustomer}
             onClose={() => {
               setShowForm(false);
               setEditingCustomer(null);
+              setSelectedCustomer(null);
             }}
           />
         )}

@@ -5,30 +5,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-
-interface Customer {
-  id: string;
-  name: string;
-  phone: string;
-  street: string;
-  number: string;
-  complement?: string;
-  neighborhood: string;
-  city: string;
-  state: string;
-  zipCode: string;
-  referencePoint?: string;
-  createdAt: Date;
-}
+import { CustomerFormData } from '@/hooks/useCustomers';
 
 interface CustomerFormProps {
-  customer?: Customer | null;
-  onSubmit: (customer: Omit<Customer, 'id' | 'createdAt'>) => void;
+  customer?: CustomerFormData | null;
+  onSubmit: (customer: CustomerFormData) => void;
   onClose: () => void;
 }
 
 const CustomerForm = ({ customer, onSubmit, onClose }: CustomerFormProps) => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<CustomerFormData>({
     name: '',
     phone: '',
     street: '',
@@ -45,18 +31,7 @@ const CustomerForm = ({ customer, onSubmit, onClose }: CustomerFormProps) => {
 
   useEffect(() => {
     if (customer) {
-      setFormData({
-        name: customer.name,
-        phone: customer.phone,
-        street: customer.street,
-        number: customer.number,
-        complement: customer.complement || '',
-        neighborhood: customer.neighborhood,
-        city: customer.city,
-        state: customer.state,
-        zipCode: customer.zipCode,
-        referencePoint: customer.referencePoint || '',
-      });
+      setFormData(customer);
     }
   }, [customer]);
 
@@ -107,11 +82,7 @@ const CustomerForm = ({ customer, onSubmit, onClose }: CustomerFormProps) => {
     e.preventDefault();
     
     if (validateForm()) {
-      onSubmit({
-        ...formData,
-        phone: formData.phone.replace(/\D/g, ''),
-        zipCode: formData.zipCode.replace(/\D/g, ''),
-      });
+      onSubmit(formData);
     }
   };
 
