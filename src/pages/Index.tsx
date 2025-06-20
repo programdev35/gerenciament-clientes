@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { Search, Plus, Edit, Trash2, Eye, LogOut, User } from 'lucide-react';
@@ -14,6 +13,7 @@ import DataMigration from '@/components/DataMigration';
 import ThemeToggle from '@/components/ThemeToggle';
 import InstallPrompt from '@/components/InstallPrompt';
 import PWAStatus from '@/components/PWAStatus';
+import PWAInstallAlert from '@/components/PWAInstallAlert';
 import { useAuth } from '@/hooks/useAuth';
 import { useCustomers, Customer, CustomerFormData } from '@/hooks/useCustomers';
 import { usePWA } from '@/hooks/usePWA';
@@ -324,6 +324,9 @@ const Index = () => {
 
       {/* PWA Install Prompt */}
       <InstallPrompt />
+      
+      {/* PWA Install Alert - Novo componente no rodapé */}
+      <PWAInstallAlert />
     </div>
   );
 };
