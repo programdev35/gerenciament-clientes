@@ -124,6 +124,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return { error: 'Unauthorized' };
       }
 
+      console.log('Iniciando criação de usuário...', { email, name });
+
       // Usar a Edge Function para criar usuário sem fazer auto-login
       const { data, error } = await supabase.functions.invoke('admin-create-user', {
         body: {
@@ -133,22 +135,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
       });
 
+      console.log('Resposta da Edge Function:', { data, error });
+
       if (error) {
         console.error('Erro ao invocar função:', error);
         toast.error('Erro ao criar usuário');
         return { error };
       }
 
-      if (data.error) {
+      if (data?.error) {
+        console.error('Erro retornado pela função:', data.error);
         toast.error(data.error);
         return { error: data.error };
       }
 
-      if (data.success) {
+      if (data?.success) {
+        console.log('Usuário criado com sucesso:', data.user);
         toast.success('Usuário criado com sucesso!');
         return {};
       }
 
+      console.error('Resposta inesperada:', data);
+      toast.error('Resposta inesperada do servidor');
       return { error: 'Resposta inesperada do servidor' };
     } catch (error) {
       console.error('Erro inesperado ao criar usuário:', error);

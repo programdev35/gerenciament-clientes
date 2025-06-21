@@ -14,6 +14,8 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Iniciando criação de usuário...')
+    
     // Create a Supabase client with the Auth context of the logged in user.
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -28,9 +30,13 @@ serve(async (req) => {
     // Verify that the user is authenticated and is an admin
     const {
       data: { user },
+      error: userError
     } = await supabaseClient.auth.getUser()
 
-    if (!user) {
+    console.log('Usuário atual:', user?.id, user?.email)
+
+    if (userError || !user) {
+      console.error('Erro de autenticação:', userError)
       return new Response(
         JSON.stringify({ error: 'Não autenticado' }),
         {
@@ -41,12 +47,27 @@ serve(async (req) => {
     }
 
     // Check if user has admin role
-    const { data: hasAdminRole } = await supabaseClient.rpc('has_role', {
+    console.log('Verificando role de admin...')
+    const { data: hasAdminRole, error: roleError } = await supabaseClient.rpc('has_role', {
       _user_id: user.id,
       _role: 'admin'
     })
 
+    console.log('Role check result:', hasAdminRole, roleError)
+
+    if (roleError) {
+      console.error('Erro ao verificar role:', roleError)
+      return new Response(
+        JSON.stringify({ error: 'Erro ao verificar permissões' }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      )
+    }
+
     if (!hasAdminRole) {
+      console.log('Usuário não é admin')
       return new Response(
         JSON.stringify({ error: 'Acesso negado. Apenas administradores podem criar usuários.' }),
         {
@@ -57,7 +78,10 @@ serve(async (req) => {
     }
 
     // Get request body
-    const { email, password, name } = await req.json()
+    const body = await req.json()
+    const { email, password, name } = body
+
+    console.log('Dados recebidos:', { email, name })
 
     if (!email || !password) {
       return new Response(
@@ -81,6 +105,8 @@ serve(async (req) => {
       }
     )
 
+    console.log('Criando usuário via Admin API...')
+
     // Create user using admin client
     const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
       email,
@@ -103,6 +129,7 @@ serve(async (req) => {
     }
 
     if (!newUser.user) {
+      console.error('Usuário não foi criado')
       return new Response(
         JSON.stringify({ error: 'Falha ao criar usuário' }),
         {
@@ -112,16 +139,19 @@ serve(async (req) => {
       )
     }
 
+    console.log('Usuário criado com sucesso:', newUser.user.id)
+
     // Create user role entry
-    const { error: roleError } = await supabaseAdmin
+    console.log('Atribuindo role de usuário...')
+    const { error: roleInsertError } = await supabaseAdmin
       .from('user_roles')
       .insert({
         user_id: newUser.user.id,
         role: 'user'
       })
 
-    if (roleError) {
-      console.error('Erro ao atribuir role:', roleError)
+    if (roleInsertError) {
+      console.error('Erro ao atribuir role:', roleInsertError)
       // Try to cleanup the created user if role assignment fails
       await supabaseAdmin.auth.admin.deleteUser(newUser.user.id)
       
@@ -133,6 +163,8 @@ serve(async (req) => {
         }
       )
     }
+
+    console.log('Role atribuído com sucesso')
 
     return new Response(
       JSON.stringify({ 
