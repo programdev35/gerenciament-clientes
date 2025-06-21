@@ -124,47 +124,32 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return { error: 'Unauthorized' };
       }
 
-      // Usar signUp normal ao invés de admin.createUser
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            name: name,
-          },
-          emailRedirectTo: `${window.location.origin}/`,
+      // Usar a Edge Function para criar usuário sem fazer auto-login
+      const { data, error } = await supabase.functions.invoke('admin-create-user', {
+        body: {
+          email,
+          password,
+          name
         }
       });
 
       if (error) {
-        toast.error(`Erro ao criar usuário: ${error.message}`);
+        console.error('Erro ao invocar função:', error);
+        toast.error('Erro ao criar usuário');
         return { error };
       }
 
-      if (data.user) {
-        // Aguardar um pouco para garantir que o trigger handle_new_user execute
-        setTimeout(async () => {
-          try {
-            // Criar entrada na tabela user_roles
-            const { error: roleError } = await supabase
-              .from('user_roles')
-              .insert({
-                user_id: data.user!.id,
-                role: 'user'
-              });
-
-            if (roleError) {
-              console.error('Erro ao atribuir role:', roleError);
-            }
-          } catch (err) {
-            console.error('Erro ao atribuir role:', err);
-          }
-        }, 1000);
-
-        toast.success('Usuário criado com sucesso! Um email de confirmação foi enviado.');
+      if (data.error) {
+        toast.error(data.error);
+        return { error: data.error };
       }
 
-      return {};
+      if (data.success) {
+        toast.success('Usuário criado com sucesso!');
+        return {};
+      }
+
+      return { error: 'Resposta inesperada do servidor' };
     } catch (error) {
       console.error('Erro inesperado ao criar usuário:', error);
       toast.error('Erro inesperado ao criar usuário');

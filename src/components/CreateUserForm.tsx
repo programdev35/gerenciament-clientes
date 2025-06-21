@@ -24,12 +24,31 @@ const CreateUserForm = ({ onUserCreated }: CreateUserFormProps) => {
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
 
+    // Validate form data
+    if (!name.trim() || !email.trim() || !password.trim()) {
+      toast.error('Todos os campos são obrigatórios');
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (password.length < 6) {
+      toast.error('A senha deve ter pelo menos 6 caracteres');
+      setIsSubmitting(false);
+      return;
+    }
+
+    console.log('Criando usuário:', { name, email });
+    
     const { error } = await createUser(email, password, name);
     
     if (!error) {
+      console.log('Usuário criado com sucesso, atualizando lista...');
       // Reset form
       e.currentTarget.reset();
+      // Trigger list refresh
       onUserCreated();
+    } else {
+      console.error('Erro ao criar usuário:', error);
     }
     
     setIsSubmitting(false);

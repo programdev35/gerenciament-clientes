@@ -22,17 +22,23 @@ export const useUsers = () => {
       return;
     }
 
+    console.log('Buscando usuários...');
+    setLoading(true);
+
     try {
       // Fetch profiles with user roles
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('*');
+        .select('*')
+        .order('created_at', { ascending: false });
 
       if (profilesError) {
         console.error('Erro ao buscar perfis:', profilesError);
         setLoading(false);
         return;
       }
+
+      console.log('Perfis encontrados:', profiles?.length || 0);
 
       // Fetch user roles
       const { data: roles, error: rolesError } = await supabase
@@ -43,6 +49,8 @@ export const useUsers = () => {
         console.error('Erro ao buscar roles:', rolesError);
       }
 
+      console.log('Roles encontrados:', roles?.length || 0);
+
       // Combine data
       const usersData: UserData[] = profiles?.map(profile => ({
         id: profile.id,
@@ -52,6 +60,7 @@ export const useUsers = () => {
         role: roles?.find(r => r.user_id === profile.id)?.role || 'user'
       })) || [];
 
+      console.log('Usuários processados:', usersData.length);
       setUsers(usersData);
     } catch (error) {
       console.error('Erro ao buscar usuários:', error);
