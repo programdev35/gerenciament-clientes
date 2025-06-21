@@ -135,11 +135,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
       });
 
-      console.log('Resposta da Edge Function:', { data, error });
+      console.log('Resposta completa da Edge Function:', { data, error });
 
       if (error) {
         console.error('Erro ao invocar função:', error);
-        toast.error('Erro ao criar usuário');
+        let errorMessage = 'Erro ao criar usuário';
+        
+        if (error.message) {
+          errorMessage = error.message;
+        }
+        
+        toast.error(errorMessage);
         return { error };
       }
 
@@ -151,7 +157,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (data?.success) {
         console.log('Usuário criado com sucesso:', data.user);
-        toast.success('Usuário criado com sucesso!');
+        toast.success(data.message || 'Usuário criado com sucesso!');
         return {};
       }
 
