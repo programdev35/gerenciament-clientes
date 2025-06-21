@@ -124,13 +124,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return { error: 'Unauthorized' };
       }
 
-      const { data, error } = await supabase.auth.admin.createUser({
+      // Usar signUp normal ao invés de admin.createUser
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        user_metadata: {
-          name: name,
-        },
-        email_confirm: true
+        options: {
+          data: {
+            name: name,
+          },
+          emailRedirectTo: `${window.location.origin}/`,
+        }
       });
 
       if (error) {
@@ -138,23 +141,32 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return { error };
       }
 
-      // Assign user role to the new user
       if (data.user) {
-        const { error: roleError } = await supabase
-          .from('user_roles')
-          .insert({
-            user_id: data.user.id,
-            role: 'user'
-          });
+        // Aguardar um pouco para garantir que o trigger handle_new_user execute
+        setTimeout(async () => {
+          try {
+            // Criar entrada na tabela user_roles
+            const { error: roleError } = await supabase
+              .from('user_roles')
+              .insert({
+                user_id: data.user!.id,
+                role: 'user'
+              });
 
-        if (roleError) {
-          console.error('Erro ao atribuir role:', roleError);
-        }
+            if (roleError) {
+              console.error('Erro ao atribuir role:', roleError);
+            }
+          } catch (err) {
+            console.error('Erro ao atribuir role:', err);
+          }
+        }, 1000);
+
+        toast.success('Usuário criado com sucesso! Um email de confirmação foi enviado.');
       }
 
-      toast.success('Usuário criado com sucesso!');
       return {};
     } catch (error) {
+      console.error('Erro inesperado ao criar usuário:', error);
       toast.error('Erro inesperado ao criar usuário');
       return { error };
     }
